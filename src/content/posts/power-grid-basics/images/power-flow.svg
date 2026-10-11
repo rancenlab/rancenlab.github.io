@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="270" viewBox="0 0 960 270" role="img" aria-labelledby="title desc">
+  <title id="title">从发电到用电</title>
+  <desc id="desc">发电、输电、配电、用电依次相连，调度与实时平衡贯穿全流程。</desc>
+  <rect width="960" height="270" rx="20" fill="#f4f5fc"/>
+  <g fill="#ffffff" stroke="#b8bedb" stroke-width="2">
+    <rect x="35" y="60" width="190" height="90" rx="16"/>
+    <rect x="268" y="60" width="190" height="90" rx="16"/>
+    <rect x="501" y="60" width="190" height="90" rx="16"/>
+    <rect x="734" y="60" width="190" height="90" rx="16"/>
+  </g>
+  <g fill="#6d5db0"><path d="M235 100h15v-8l13 13-13 13v-8h-15z"/><path d="M468 100h15v-8l13 13-13 13v-8h-15z"/><path d="M701 100h15v-8l13 13-13 13v-8h-15z"/></g>
+  <g fill="#303951" text-anchor="middle" font-family="system-ui, sans-serif" font-size="25">
+    <text x="130" y="98">发电</text><text x="363" y="98">输电</text><text x="596" y="98">配电</text><text x="829" y="98">用电</text>
+    <g font-size="16" fill="#59647e"><text x="130" y="130">能量转换</text><text x="363" y="130">远距离输送</text><text x="596" y="130">分配到用户</text><text x="829" y="130">生产与生活</text></g>
+    <text x="480" y="211" font-size="20">调度与实时平衡 · 贯穿整个物理过程</text>
+    <text x="480" y="242" font-size="16" fill="#59647e">商业合同约定买卖关系，电能流动遵循网络规律</text>
+  </g>
+</svg>

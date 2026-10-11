@@ -40,7 +40,7 @@ test('主题支持键盘切换，跨页面与刷新保留选择', async ({ page 
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
   await toggle.click();
   await expect(root).toHaveAttribute('data-theme', 'light');
-  await page.goto(target('posts/images-and-publishing/'));
+  await page.goto(target('posts/power-grid-basics/'));
   await expect(root).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('.prose')).toHaveCSS('color', 'rgb(73, 82, 106)');
   await page.reload();
@@ -67,27 +67,28 @@ test('知识星图按系列聚合文章，星星和星系可以进入阅读', as
   await page.goto(target());
   const universe = page.getByRole('region', { name: '知识星图' });
   await expect(universe.locator('.sky-star')).toHaveCount(3);
-  await expect(universe.locator('.sky-independent')).toHaveCount(1);
+  await expect(universe.locator('.sky-independent')).toHaveCount(0);
+  await expect(universe.locator('.sky-count')).toHaveText('1 个星系 · 8 颗星');
   await expect(universe.locator('a[href*="draft-example"]')).toHaveCount(0);
-  const galaxy = universe.getByRole('region', { name: '从笔记到个人博客' });
-  const entry = galaxy.getByRole('link', { name: '展开星系：从笔记到个人博客' });
+  const galaxy = universe.getByRole('region', { name: '电力交易' });
+  const entry = galaxy.getByRole('link', { name: '展开星系：电力交易' });
   await entry.focus();
   await entry.click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('.galaxy-article-star')).toHaveCount(3);
-  await expect(dialog.locator('.galaxy-article-star').first()).toHaveAttribute('href', target('posts/start-with-markdown/'));
+  await expect(dialog.locator('.galaxy-article-star')).toHaveCount(6);
+  await dialog.getByRole('button', { name: '下一组' }).click();
+  await expect(dialog.locator('.galaxy-article-star')).toHaveCount(2);
+  await expect(dialog.locator('.galaxy-article-star').last()).toContainText('电价的组成');
+  await dialog.getByRole('button', { name: '上一组' }).click();
+  await expect(dialog.locator('.galaxy-article-star').first()).toHaveAttribute('href', target('posts/electricity-market-guide/'));
   await dialog.locator('.galaxy-article-star').first().click();
-  await expect(page).toHaveURL(new RegExp('/posts/start-with-markdown/$'));
+  await expect(page).toHaveURL(new RegExp('/posts/electricity-market-guide/$'));
   await page.goBack();
   await galaxy.getByRole('heading').getByRole('link').focus();
   await galaxy.getByRole('heading').getByRole('link').click();
   await dialog.getByRole('link', { name: '系列目录' }).click();
-  await expect(page).toHaveURL(new RegExp('/series/build-a-learning-blog/$'));
-  await page.goBack();
-  await universe.locator('.sky-independent').focus();
-  await universe.locator('.sky-independent').click();
-  await expect(page).toHaveURL(new RegExp('/posts/write-a-useful-note/$'));
+  await expect(page).toHaveURL(new RegExp('/series/electricity-trading/$'));
 });
 
 test('星星持续公转，聚焦暂停，减少动态效果设置生效', async ({ page }, testInfo) => {
@@ -116,7 +117,7 @@ test('星星持续公转，聚焦暂停，减少动态效果设置生效', async
   await expect(page.locator('.sky-meteors')).toBeHidden();
   await entry.click();
   await page.locator('.galaxy-article-star').first().click();
-  await expect(page).toHaveURL(new RegExp('/posts/start-with-markdown/$'));
+  await expect(page).toHaveURL(new RegExp('/posts/electricity-market-guide/$'));
 });
 
 test('鼠标悬停星系与星星产生反馈并保持可点击', async ({ page }, testInfo) => {
@@ -142,13 +143,21 @@ test('鼠标悬停星系与星星产生反馈并保持可点击', async ({ page 
   await page.screenshot({ path: 'artifacts/star-hover-desktop.png' });
   await entry.click();
   await page.locator('.galaxy-article-star').first().click();
-  await expect(page).toHaveURL(new RegExp('/posts/start-with-markdown/$'));
+  await expect(page).toHaveURL(new RegExp('/posts/electricity-market-guide/$'));
 });
 
 test.describe('全景宇宙运动', () => {
-  test('独立星光与星系保持相对位置并共同位移', async ({ page }) => {
+  test('独立星光测试夹具与星系保持相对位置并共同位移', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.goto(target());
+    await page.evaluate((href) => {
+      const star = document.createElement('a');
+      star.className = 'sky-independent';
+      star.href = href;
+      star.style.cssText = '--object-x: 74%; --object-y: 62%; --object-order: 1;';
+      star.innerHTML = '<span class="sky-star-light" aria-hidden="true"></span><span class="sky-independent-label"><small>独立星光</small><span>交互测试夹具</span></span>';
+      document.querySelector('.sky-page').append(star);
+    }, target('posts/electricity-market-economics/'));
     const positions = () => page.evaluate(() => {
       const galaxy = document.querySelector('.sky-galaxy').getBoundingClientRect();
       const star = document.querySelector('.sky-independent .sky-star-light').getBoundingClientRect();
@@ -162,7 +171,7 @@ test.describe('全景宇宙运动', () => {
     await expect(page.locator('.sky-independent .sky-star-light')).toHaveCSS('animation-name', 'none');
     await page.locator('.sky-independent').focus();
     await page.locator('.sky-independent').click();
-    await expect(page).toHaveURL(new RegExp('/posts/write-a-useful-note/$'));
+    await expect(page).toHaveURL(new RegExp('/posts/electricity-market-economics/$'));
   });
 
   test('背景星海与前景共同流动，阅读时只暂停前景', async ({ page }, testInfo) => {
@@ -214,13 +223,13 @@ test('分层星系支持筛选、返回与视角控制', async ({ page }, testIn
     await expect(page.locator('.sky-world')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 70, 20)');
     await page.getByRole('button', { name: '复位', exact: true }).click();
   }
-  const entry = page.getByRole('link', { name: '展开星系：从笔记到个人博客' });
+  const entry = page.getByRole('link', { name: '展开星系：电力交易' });
   await entry.focus();
   await entry.click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByRole('searchbox', { name: '查找星星' }).fill('图片');
+  await dialog.getByRole('searchbox', { name: '查找星星' }).fill('电价');
   await expect(dialog.locator('.galaxy-article-star')).toHaveCount(1);
-  await expect(dialog.locator('.galaxy-article-star')).toContainText('图片跟着文章走');
+  await expect(dialog.locator('.galaxy-article-star')).toContainText('电价的组成：从交易价格到电费账单');
   await dialog.getByRole('searchbox').fill('不存在的星星');
   await expect(dialog.locator('.galaxy-empty')).toBeVisible();
   await dialog.getByRole('searchbox').fill('');
@@ -280,37 +289,37 @@ test('个人主页、手记入口与友好 RSS 订阅页有效', async ({ page, 
 });
 
 test('系列顺序和上一篇、下一篇保持一致', async ({ page }) => {
-  await page.goto(target('series/build-a-learning-blog/'));
-  await expect(page.locator('.chapter')).toHaveCount(3);
+  await page.goto(target('series/electricity-trading/'));
+  await expect(page.locator('.chapter')).toHaveCount(8);
   await page.locator('.chapter').first().click();
-  await expect(page).toHaveURL(new RegExp('/posts/start-with-markdown/$'));
+  await expect(page).toHaveURL(new RegExp('/posts/electricity-market-guide/$'));
   await expect(page.getByRole('navigation', { name: '系列上下篇' }).getByRole('link')).toHaveCount(1);
   await page.getByRole('navigation', { name: '系列上下篇' }).getByRole('link').click();
-  await expect(page).toHaveURL(new RegExp('/posts/organize-a-series/$'));
+  await expect(page).toHaveURL(new RegExp('/posts/power-grid-basics/$'));
   await expect(page.getByRole('navigation', { name: '系列上下篇' }).getByRole('link')).toHaveCount(2);
 });
 
-test('中文、英文搜索有效，草稿不可检索', async ({ page }) => {
+test('中文、英文搜索有效，旧测试内容不可检索', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(target('search/'));
   const input = page.getByRole('searchbox');
-  await input.fill('Markdown');
+  await input.fill('kWh');
   await expect(page.locator('#search-status')).toContainText('找到');
   await expect(page.locator('#search-results li').first()).toBeVisible();
-  await input.fill('图片');
-  await expect(page.locator('#search-results')).toContainText('图片跟着文章走');
-  await page.locator('#search-results a').filter({ hasText: '图片跟着文章走' }).click();
-  await expect(page).toHaveURL(new RegExp('/posts/images-and-publishing/$'));
+  await input.fill('电价');
+  await expect(page.locator('#search-results')).toContainText('电价的组成：从交易价格到电费账单');
+  await page.locator('#search-results a').filter({ hasText: '电价的组成：从交易价格到电费账单' }).click();
+  await expect(page).toHaveURL(new RegExp('/posts/electricity-price-components/$'));
   await page.goto(target('search/'));
-  await input.fill('UNPUBLISHEDCANARYXQZ');
+  await input.fill('"UNPUBLISHEDCANARYXQZ"');
   await expect(page.locator('#search-status')).toContainText('暂时没有找到');
   await expect(page.locator('#search-results li')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
 test('文章图片与代码可读，窄屏不溢出', async ({ page, context }, testInfo) => {
-  await page.goto(target('posts/images-and-publishing/'));
+  await page.goto(target('posts/power-grid-basics/'));
   const image = page.locator('.prose img');
   await expect(image).toBeVisible();
   expect(await image.evaluate((element) => element.complete && element.naturalWidth > 0)).toBe(true);
@@ -318,22 +327,30 @@ test('文章图片与代码可读，窄屏不溢出', async ({ page, context }, 
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.getByRole('button', { name: '复制代码' }).click();
   await expect(page.getByRole('button', { name: '复制代码' })).toHaveText('已复制');
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('publishing-flow.svg');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('电能量（kWh）');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: `artifacts/article-${testInfo.project.name}.png`, fullPage: true });
-  await page.goto(target('posts/write-a-useful-note/'));
-  await expect(page.getByRole('navigation', { name: '系列上下篇' })).toHaveCount(0);
+  await page.goto(target('posts/electricity-price-components/'));
+  await expect(page.getByRole('navigation', { name: '系列上下篇' }).getByRole('link')).toHaveCount(1);
+  await expect(page.locator('.prose table')).toHaveCount(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
-test('生产草稿返回 404，订阅只含公开文章', async ({ request }) => {
-  const draft = await request.get(target('posts/draft-example/'));
-  expect(draft.status()).toBe(404);
+test('旧测试内容返回 404，订阅与站点地图只含新专题', async ({ request }) => {
+  const removedRoutes = ['posts/start-with-markdown/', 'posts/organize-a-series/', 'posts/images-and-publishing/', 'posts/write-a-useful-note/', 'posts/draft-example/', 'series/build-a-learning-blog/'];
+  for (const route of removedRoutes) {
+    const response = await request.get(target(route));
+    expect(response.status(), route).toBe(404);
+  }
   const rss = await request.get(target('rss.xml'));
   expect(rss.ok()).toBe(true);
   const body = await rss.text();
-  expect(body.match(/<item>/g)).toHaveLength(4);
-  expect(body).not.toContain('draft-example');
+  expect(body.match(/<item>/g)).toHaveLength(8);
+  expect(body).toContain('电力交易导读');
+  for (const route of removedRoutes) expect(body).not.toContain(route);
   const map = await request.get(target('sitemap-0.xml'));
   expect(map.ok()).toBe(true);
-  expect(await map.text()).not.toContain('draft-example');
+  const sitemap = await map.text();
+  for (const route of removedRoutes) expect(sitemap).not.toContain(route);
+  expect(sitemap).toContain('/series/electricity-trading/');
 });

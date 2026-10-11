@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { href } from '../lib/content';
 ---
-<Base title="搜索"><header class="page-heading"><span class="eyebrow">FIND A CONNECTION</span><h1>你想了解什么？</h1><p>搜索文章标题与正文，例如“Markdown”“系列”或“图片”。</p></header><div class="search-panel"><label for="search-input">搜索手记</label><div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="输入关键词，寻找一条线索…" autocomplete="off" /></div><p id="search-status" role="status" aria-live="polite">输入关键词开始搜索。</p><ul id="search-results" class="search-results"></ul></div><script is:inline define:vars={{ pagefindUrl: href('pagefind/pagefind.js') }} type="module">
+<Base title="搜索"><header class="page-heading"><span class="eyebrow">FIND A CONNECTION</span><h1>你想了解什么？</h1><p>搜索文章标题与正文，例如“电价”“电力市场”或“虚拟电厂”。</p></header><div class="search-panel"><label for="search-input">搜索手记</label><div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="输入关键词，寻找一条线索…" autocomplete="off" /></div><p id="search-status" role="status" aria-live="polite">输入关键词开始搜索。</p><ul id="search-results" class="search-results"></ul></div><script is:inline define:vars={{ pagefindUrl: href('pagefind/pagefind.js') }} type="module">
     const input = document.getElementById('search-input');
     const status = document.getElementById('search-status');
     const results = document.getElementById('search-results');

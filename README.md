@@ -2,7 +2,7 @@
 
 一个独立的 Astro 中文技术博客：Markdown 写作、系列阅读、本地图片、全文搜索、RSS，以及面向多平台分发的离线导出。
 
-本项目位于 `know-base/personal-blog/`，不会扫描、发布或修改上一级知识库。当前没有连接 GitHub 账号，没有提交或推送 Git，也没有发布公网网站。
+本项目位于 `know-base/personal-blog/`，构建只读取本项目的内容目录，不会自动扫描或发布上一级知识库。正式站点为 `https://rancenlab.github.io/`，通过独立仓库的 GitHub Pages 工作流手动发布。
 
 ## 1. 立即查看
 
@@ -50,9 +50,9 @@ npm run preview
 - 生产构建过滤草稿；开发模式展示草稿。
 - 新建文章、新建系列、Markdown/HTML/图片导出命令。
 - 元数据与系列关系校验、自动测试、构建产物检查。
-- GitHub Pages 工作流已预留，仅支持手动触发，待配置正式网址后启用。
+- GitHub Pages 已配置，仅手动触发；本地编辑不会自动更新公网网站。
 
-示例内容是新写的公开建站与写作说明，没有复制知识库中的业务资料。共有一套三章系列、一篇独立文章、一篇无敏感信息的验收草稿。
+当前内容为“电力交易”专题：导读加七篇基础文章，整理自用户指定的 `笔记/电力市场/`。测试文章、示例系列及其附件已从当前内容中移除，原始笔记未修改；旧版本仍保留在 Git 历史中。整理范围与来源映射见 `CONTENT-MIGRATION.md`。
 
 ## 3. 项目结构
 
@@ -73,9 +73,8 @@ src/styles/universe-home.css  首页全屏星空与散落布局
 scripts/                      新建、导出、校验工具
 templates/                    写作模板
 tests/                        内容规则测试
-distribution/                 平台发布记录示例
 public/                       公开静态文件
-.github/workflows/deploy.yml   后续部署工作流
+.github/workflows/deploy.yml   手动部署工作流
 ```
 
 `node_modules/`、`dist/`、`.astro/` 和 `exports/` 都是生成内容，已加入 `.gitignore`。不要把私人附件放入 `public/`。
@@ -163,20 +162,20 @@ npm run build
 
 `npm run build` 检查所有内容并输出 `dist/`，随后生成 Pagefind 索引。搜索仅索引带 `data-pagefind-body` 的文章正文；正文目录、导航和页脚不作为文章内容索引。
 
-用 `npm run preview` 打开 `/search/`，输入“Markdown”“图片”“系列”验证搜索，再输入唯一测试词 `UNPUBLISHEDCANARYXQZ` 验证草稿不在结果中。
+用 `npm run preview` 打开 `/search/`，输入“电价”“虚拟电厂”“kWh”验证搜索，再输入带英文双引号的 `"UNPUBLISHEDCANARYXQZ"` 精确查询，确认旧内容不在结果中。
 
-本机安装 Chrome 后可运行 `npm run test:browser`，在桌面与手机宽度测试真实页面、搜索、系列导航、图片和草稿排除。该命令需要已有 `dist/`，会自动启动并停止隔离的本地测试服务。截图输出到忽略的 `artifacts/`。其他环境可设置 `PLAYWRIGHT_CHANNEL`，浏览器安装按 Playwright 官方指引处理。
+本机安装 Chrome 后可运行 `npm run test:browser`，在桌面与手机宽度测试真实页面、搜索、八篇章节导航、星系分页、图片和旧内容排除。独立星光的运动测试使用仅存在于测试浏览器中的夹具，不向正式内容添加测试文章。该命令需要已有 `dist/`，会自动启动并停止隔离的本地测试服务。截图输出到忽略的 `artifacts/`。其他环境可设置 `PLAYWRIGHT_CHANNEL`，浏览器安装按 Playwright 官方指引处理。
 
 ## 8. 导出到其他平台
 
 ```bash
-npm run export:post -- images-and-publishing
+npm run export:post -- power-grid-basics
 ```
 
 产物：
 
 ```text
-exports/images-and-publishing/
+exports/power-grid-basics/
 ├── article.md
 ├── article.html
 ├── images/
@@ -189,7 +188,7 @@ exports/images-and-publishing/
 
 没有正式网址时，清单会提示链接指向本地。配置 `.env` 后重新导出再对外使用。导出默认拒绝草稿，确需本地预览可加 `--allow-draft`。
 
-`manifest.json` 中 `sourceHash` 标识本次正文源文件，`sourceCommit` 仅在项目自身已经是独立 Git 仓库且存在提交时记录。工作区尚未提交的修改应以 hash 为准。平台发布记录可参考 `distribution/example.json`；不要在其中保存账号令牌。
+`manifest.json` 中 `sourceHash` 标识本次正文源文件，`sourceCommit` 仅在项目自身已经是独立 Git 仓库且存在提交时记录。工作区尚未提交的修改应以 hash 为准。其他平台的发布记录应另外维护，不要保存账号令牌。
 
 ## 9. 修改个人资料、站点名称与外观
 
@@ -202,9 +201,11 @@ exports/images-and-publishing/
 
 当前站名“知行手记”是可修改的初始名称。使用系统字体，无需从第三方字体服务加载。首页图形使用 CSS，不依赖远程图片。
 
-## 10. 后续接入 GitHub Pages
+## 10. GitHub Pages 发布
 
-现在不需要提供账号。准备发布时再执行下面的步骤：
+当前仓库为 `rancenlab/rancenlab.github.io`，已配置 `SITE_URL=https://rancenlab.github.io`、`BASE_PATH=/`。更新流程为：检查本地内容 → 提交并推送 → 在 Actions 手动运行 `Publish blog` → 验证正式站点。迁移文章本身不代表已提交或已上线。
+
+新建或迁移站点时参考以下步骤：
 
 1. 在本目录初始化独立 Git 仓库，不在上一级知识库初始化发布仓库。
 2. 建立 `用户名.github.io` 或普通项目仓库，核对公开内容后提交。
@@ -233,7 +234,7 @@ on:
 - 依赖安装使用 `npm ci` 和锁文件；不要每次启动升级包。
 - 修改文章后运行构建，确认生成内容正常再发布。
 - 已发布文章修改后，其他平台不会自动更新；根据发布记录逐个平台处理。
-- 原始示例文章可逐步替换，但先删除或修正其他文章对其的链接。
+- 删除文章时同步检查正文链接、搜索索引、RSS、站点地图及相关测试；重新构建后再发布。
 - 当前没有评论、账号系统、数据库、定时发布和在线管理后台。
 - 当前没有自动转存平台图片、浏览器登录或真实平台发布验收。
 - GitHub Pages 的读者访问速度需在上线后使用实际网络测试，域名本身不保证提速。
