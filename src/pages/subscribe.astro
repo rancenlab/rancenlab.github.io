@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import { getContent, href, postHref, dateLabel } from '../lib/content';
+const { posts } = await getContent();
+const latest = posts.filter((post) => !post.data.draft).slice(0, 4);
+const feedPath = href('rss.xml');
+const feedUrl = new URL(feedPath, Astro.site).href;
+---
+<Base title="订阅更新" description="把知行手记添加到你的 RSS 阅读器，不错过新的技术文章。">
+  <header class="page-heading"><span class="eyebrow">FOLLOW THE SIGNAL</span><h1>保持好奇，也保持连接<span class="title-dot">.</span></h1><p>用 RSS 订阅新文章。无需注册，在你自己的阅读器里，按照自己的节奏阅读。</p></header>
+  <div class="subscription-grid">
+    <section class="subscription-card"><span class="rss-mark" aria-hidden="true">◔</span><h2>订阅知行手记</h2><p>复制下面的订阅地址，在支持 RSS 的阅读器中选择“添加订阅”，粘贴地址即可。</p><label for="feed-address">RSS 订阅地址</label><div class="feed-address-row"><input id="feed-address" type="url" readonly value={feedUrl} spellcheck="false" /><button id="copy-feed" class="button" type="button">复制订阅地址</button></div><p id="feed-feedback" class="feed-feedback" role="status" aria-live="polite">复制地址只是第一步，添加到阅读器后才会收到更新。</p><ol class="subscribe-steps"><li><span>01</span><div><strong>复制地址</strong><p>使用上方按钮获取这个博客的订阅源。</p></div></li><li><span>02</span><div><strong>添加到阅读器</strong><p>在你使用的 RSS 阅读器中添加订阅源。</p></div></li><li><span>03</span><div><strong>按自己的节奏阅读</strong><p>阅读器刷新时，会获取最新文章的标题、摘要与链接。</p></div></li></ol><details class="feed-details"><summary>需要查看 RSS 原始文件？</summary><p>RSS 是供阅读器使用的 XML 数据。浏览器直接打开时显示代码属于正常现象。</p><a class="text-link" href={feedPath}>查看 RSS 源文件（XML） ↗</a></details></section>
+    <aside class="subscription-latest"><span class="eyebrow">IN YOUR NEXT READ</span><h2>订阅里有什么？</h2><p>公开文章的更新，不包含草稿。</p><div>{latest.map((post) => <a href={postHref(post)}><time>{dateLabel(post.data.publishedAt)}</time><h3>{post.data.title}</h3><span>阅读全文 ↗</span></a>)}</div><a class="text-link" href={href('posts/')}>先浏览所有文章 →</a></aside>
+  </div>
+  <script is:inline define:vars={{ feedPath }}>
+    const feedAddress = document.getElementById('feed-address');
+    const feedButton = document.getElementById('copy-feed');
+    const feedFeedback = document.getElementById('feed-feedback');
+    feedAddress.value = new URL(feedPath, window.location.origin).href;
+    feedButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(feedAddress.value);
+        feedButton.textContent = '已复制 ✓';
+        feedFeedback.textContent = '已复制。请在 RSS 阅读器中选择“添加订阅”，粘贴此地址。';
+      } catch {
+        feedAddress.focus();
+        feedAddress.select();
+        feedFeedback.textContent = '浏览器未允许自动复制，地址已选中，请手动复制后添加到阅读器。';
+      }
+    });
+  </script>
+</Base>

@@ -1,0 +1,72 @@
+---
+import { chapters, postHref, seriesHref, href, type Post, type Series } from '../lib/content';
+import { INDEPENDENT_PREVIEW_SIZE } from '../lib/universe.mjs';
+interface Props { posts: Post[]; series: Series[]; }
+const { posts, series } = Astro.props;
+const published = posts.filter((post) => !post.data.draft);
+const galaxies = series.map((item) => ({ kind: 'galaxy' as const, series: item, stars: chapters(published, item.data.slug) })).filter((item) => item.stars.length);
+const independent = published.filter((post) => !post.data.series).map((post) => ({ kind: 'star' as const, post }));
+const objects = [...galaxies, ...independent.slice(0, INDEPENDENT_PREVIEW_SIZE)];
+const galaxyData = galaxies.map((galaxy) => ({ slug: galaxy.series.data.slug, title: galaxy.series.data.title, href: seriesHref(galaxy.series), stars: galaxy.stars.map((post, index) => ({ title: post.data.title, href: postHref(post), tags: post.data.tags, order: index + 1 })) }));
+const skies = Array.from({ length: Math.max(1, Math.ceil(objects.length / 4)) }, (_, index) => objects.slice(index * 4, index * 4 + 4));
+const positions = [{ x: 30, y: 40 }, { x: 74, y: 62 }, { x: 76, y: 17 }, { x: 27, y: 82 }];
+const starPosition = (index: number, count: number) => {
+  const angle = (-160 + index * 270 / Math.max(count - 1, 1)) * Math.PI / 180;
+  const radius = count > 6 ? 20 + index % 3 * 9 : 32;
+  return { x: 50 + Math.cos(angle) * radius, y: 44 + Math.sin(angle) * radius * .8, angle, radius };
+};
+---
+<section class="sky-map" aria-label="知识星图">
+  <div class="sky-count">{galaxies.length} 个星系 <span>·</span> {published.length} 颗星</div>
+  <div class="sky-viewport" tabindex="0" aria-label="星图画布，可拖动或使用方向键移动"><div class="sky-world">
+  {skies.map((objectsOnPage, pageIndex) => (
+    <div class="sky-page" data-sky-page={pageIndex} hidden={pageIndex !== 0}>
+      {objectsOnPage.map((object, index) => {
+        const position = positions[index];
+        return object.kind === 'galaxy' ? (
+          <section class="sky-galaxy" aria-labelledby={`galaxy-${object.series.data.slug}`} style={`--object-x: ${position.x}%; --object-y: ${position.y}%; --object-order: ${index}; --galaxy-hue: ${250 + index * 37};`}>
+            <div class="sky-galaxy-dust" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="sky-galaxy-stars">
+              {Array.from({ length: Math.min(object.stars.length, 3) }, (_, starIndex) => {
+                const point = starPosition(starIndex, Math.min(object.stars.length, 3));
+                return <span class="sky-star sky-preview-star" aria-hidden="true" data-orbit-angle={point.angle} data-orbit-radius={point.radius} style={`--star-x: ${point.x}%; --star-y: ${point.y}%; --star-delay: ${starIndex * -1.7}s`}><span class="sky-star-light"></span></span>;
+              })}
+              <a class="sky-galaxy-entry" href={seriesHref(object.series)} data-enter-galaxy={object.series.data.slug} aria-label={`展开星系：${object.series.data.title}`}><span class="sky-star-light"></span><span>进入星系</span></a>
+            </div>
+            <div class="sky-galaxy-caption"><span>系列星系 · {object.stars.length} 篇</span><h2 id={`galaxy-${object.series.data.slug}`}><a href={seriesHref(object.series)} data-enter-galaxy={object.series.data.slug}>{object.series.data.title} <span aria-hidden="true">↗</span></a></h2></div>
+          </section>
+        ) : (
+          <a class="sky-independent" href={postHref(object.post)} style={`--object-x: ${position.x}%; --object-y: ${position.y}%; --object-order: ${index};`}><span class="sky-star-light" aria-hidden="true"></span><span class="sky-independent-label"><small>独立星光</small><span>{object.post.data.title}</span></span></a>
+        );
+      })}
+      {objectsOnPage.length === 0 && <p class="sky-empty">这片宇宙，等待第一颗星被点亮。</p>}
+    </div>
+  ))}
+  </div></div>
+  <div class="sky-controls" aria-label="星图视角"><button type="button" data-view-action="out" aria-label="缩小星图">−</button><output data-view-scale aria-live="polite">100%</output><button type="button" data-view-action="in" aria-label="放大星图">＋</button><button type="button" data-view-action="reset">复位</button><a href={href('search/')}>搜索星空 ↗</a></div>
+  {independent.length > INDEPENDENT_PREVIEW_SIZE && <a class="sky-more-stars" href={href('posts/')}>还有 {independent.length - INDEPENDENT_PREVIEW_SIZE} 颗独立星光 · 查看全部 ↗</a>}
+  {skies.length > 1 && <div class="sky-pagination"><button type="button" data-sky-direction="-1" aria-label="上一片星空" disabled>←</button><span role="status" aria-live="polite" data-sky-status>1 / {skies.length}</span><button type="button" data-sky-direction="1" aria-label="下一片星空">→</button></div>}
+  <dialog class="galaxy-dialog" aria-labelledby="galaxy-dialog-title">
+    <div class="galaxy-dialog-top"><span>INSIDE THE GALAXY</span><button type="button" data-close-galaxy aria-label="返回宇宙">返回宇宙 ×</button></div>
+    <h2 id="galaxy-dialog-title"></h2>
+    <div class="galaxy-dialog-tools"><label>查找星星<input type="search" data-galaxy-search placeholder="文章标题或标签" /></label><a data-galaxy-directory>系列目录 ↗</a></div>
+    <div class="galaxy-article-stars"></div>
+    <div class="galaxy-dialog-bottom"><button type="button" data-article-direction="-1">上一组</button><span data-article-status role="status" aria-live="polite"></span><button type="button" data-article-direction="1">下一组</button></div>
+  </dialog>
+  <script type="application/json" id="galaxy-data" set:html={JSON.stringify(galaxyData).replace(/</g, '\\u003c')} />
+</section>
+<script>
+  import '../scripts/universe-motion';
+  import '../scripts/universe-navigation';
+  const pages = Array.from(document.querySelectorAll<HTMLElement>('[data-sky-page]'));
+  const controls = document.querySelectorAll<HTMLButtonElement>('[data-sky-direction]');
+  let current = 0;
+  controls.forEach((button) => button.addEventListener('click', () => {
+    current = Math.max(0, Math.min(pages.length - 1, current + Number(button.dataset.skyDirection)));
+    pages.forEach((page, index) => { page.hidden = index !== current; });
+    controls.forEach((control) => { control.disabled = Number(control.dataset.skyDirection) < 0 ? current === 0 : current === pages.length - 1; });
+    const status = document.querySelector('[data-sky-status]');
+    if (status) status.textContent = `${current + 1} / ${pages.length}`;
+    document.dispatchEvent(new Event('sky:reset-view'));
+  }));
+</script>

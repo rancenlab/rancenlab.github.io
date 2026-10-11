@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import { href, getContent, dateLabel, postHref } from '../lib/content';
+import { profile } from '../config';
+const { posts, series } = await getContent();
+const published = posts.filter((post) => !post.data.draft);
+const avatarUrl = profile.avatar ? (/^https?:\/\//.test(profile.avatar) ? profile.avatar : href(profile.avatar)) : '';
+---
+<Base title={`${profile.name} 的个人主页`} description={profile.bio}>
+  <div class="breadcrumb"><a href={href()}>首页</a><span>/</span><span>个人主页</span></div>
+  <section class="profile-hero">
+    <div class="profile-avatar">{avatarUrl ? <img src={avatarUrl} alt={`${profile.name} 的头像`} width="160" height="160" /> : <span aria-label={`${profile.name} 的字母头像`}>{profile.initials}<b>_</b></span>}<i class="avatar-corner" aria-hidden="true"></i></div>
+    <div class="profile-heading"><span class="eyebrow">HELLO WORLD / ABOUT ME</span><h1>我是 <span>{profile.name}</span><span class="title-dot">.</span></h1><p>{profile.role}</p><div class="tag-row">{profile.interests.map((topic) => <span>{topic}</span>)}</div></div>
+    <div class="profile-quote"><span class="eyebrow">MY MINDSET</span><p>{profile.tagline}</p><span>STAY CURIOUS. KEEP BUILDING.</span></div>
+  </section>
+  <div class="profile-grid">
+    <div>
+      <section class="profile-section"><span class="eyebrow">01 / INTRODUCTION</span><h2>关于我</h2><p class="profile-bio">{profile.bio}</p><p class="profile-bio">我希望这些记录既能帮助自己复盘，也能成为与他人交流的起点。比起只给出一个结论，我更愿意保留问题、尝试和验证的过程。</p><div class="profile-actions"><a class="button" href={href('posts/')}>阅读我的文章 ↗</a><a class="secondary-button" href={href('series/')}>探索学习系列 →</a></div></section>
+      <section class="profile-section"><span class="eyebrow">02 / HOW I LEARN</span><h2>我的学习方式</h2><div class="principle-list">{profile.principles.map((principle, index) => <article><span>{String(index + 1).padStart(2, '0')}</span><div><h3>{principle.title}</h3><p>{principle.description}</p></div></article>)}</div></section>
+      <section class="profile-section"><span class="eyebrow">03 / RECENT WRITING</span><h2>最近发布</h2><div class="profile-entries">{published.slice(0, 3).map((post) => <a href={postHref(post)}><time>{dateLabel(post.data.publishedAt)}</time><span>{post.data.title}</span><b aria-hidden="true">↗</b></a>)}</div></section>
+    </div>
+    <aside class="profile-sidebar">
+      <section class="profile-info"><span class="eyebrow">PROFILE / 基本信息</span><dl><div><dt>名字</dt><dd>{profile.name}</dd></div><div><dt>关注</dt><dd>{profile.interests.join(' / ')}</dd></div>{profile.occupation && <div><dt>职业</dt><dd>{profile.occupation}</dd></div>}{profile.location && <div><dt>所在地</dt><dd>{profile.location}</dd></div>}</dl><div class="profile-stats"><div><strong>{String(published.length).padStart(2, '0')}</strong><span>公开文章</span></div><div><strong>{String(series.length).padStart(2, '0')}</strong><span>学习系列</span></div></div></section>
+      <section class="profile-contact"><span class="eyebrow">KEEP IN TOUCH</span><h3>保持连接</h3><p>订阅新文章，继续这场关于技术与实践的对话。</p>{profile.github && <a href={profile.github} target="_blank" rel="noreferrer">GitHub ↗</a>}{profile.email && <a href={`mailto:${profile.email}`}>邮件联系 ↗</a>}<a href={href('subscribe/')}>RSS 订阅 ↗</a></section>
+    </aside>
+  </div>
+</Base>

@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/content';
+---
+<Base title="搜索"><header class="page-heading"><span class="eyebrow">FIND A CONNECTION</span><h1>你想了解什么？</h1><p>搜索文章标题与正文，例如“Markdown”“系列”或“图片”。</p></header><div class="search-panel"><label for="search-input">搜索手记</label><div class="search-input-wrap"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="输入关键词，寻找一条线索…" autocomplete="off" /></div><p id="search-status" role="status" aria-live="polite">输入关键词开始搜索。</p><ul id="search-results" class="search-results"></ul></div><script is:inline define:vars={{ pagefindUrl: href('pagefind/pagefind.js') }} type="module">
+    const input = document.getElementById('search-input');
+    const status = document.getElementById('search-status');
+    const results = document.getElementById('search-results');
+    let searchModule;
+    let requestNumber = 0;
+    let timer;
+    async function search() {
+      const currentRequest = ++requestNumber;
+      const query = input.value.trim();
+      results.replaceChildren();
+      if (!query) { status.textContent = '输入关键词开始搜索。'; return; }
+      status.textContent = '正在查找…';
+      try {
+        searchModule ||= await import(pagefindUrl);
+        const response = await searchModule.search(query);
+        const items = await Promise.all(response.results.slice(0, 20).map((result) => result.data()));
+        if (currentRequest !== requestNumber) return;
+        status.textContent = response.results.length ? `找到 ${response.results.length} 条结果${response.results.length > 20 ? '，显示前 20 条' : ''}。` : '暂时没有找到，试试更短的关键词。';
+        for (const item of items) {
+          const row = document.createElement('li');
+          const link = document.createElement('a');
+          const title = document.createElement('h2');
+          const excerpt = document.createElement('p');
+          link.href = item.url;
+          title.textContent = item.meta.title || '未命名文章';
+          const parsed = new DOMParser().parseFromString(item.excerpt, 'text/html');
+          excerpt.textContent = parsed.body.textContent;
+          link.append(title, excerpt);
+          row.append(link);
+          results.append(row);
+        }
+      } catch {
+        if (currentRequest === requestNumber) status.textContent = '搜索索引尚未生成。请先运行 npm run build，再用 npm run preview 查看完整搜索。';
+      }
+    }
+    input.addEventListener('input', () => { ++requestNumber; clearTimeout(timer); timer = setTimeout(search, 180); });
+  </script></Base>

@@ -1,0 +1,7 @@
+---
+import Base from '../../layouts/Base.astro';
+import SeriesCard from '../../components/SeriesCard.astro';
+import { getContent } from '../../lib/content';
+const { posts, series } = await getContent();
+---
+<Base title="系列阅读"><header class="page-heading"><span class="eyebrow">LEARN IN SEQUENCE</span><h1>把知识，连成一条线。</h1><p>有起点、有顺序的学习路径。选择一个感兴趣的主题，从第一章开始。</p></header><div class="series-grid all-series">{series.map((item, index) => <SeriesCard series={item} posts={posts} index={index} />)}</div>{!series.length && <p class="empty-state">第一个系列正在准备中。</p>}</Base>

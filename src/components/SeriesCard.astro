@@ -1,0 +1,13 @@
+---
+import { chapters, seriesHref, statusLabels, type Series, type Post } from '../lib/content';
+interface Props { series: Series; posts: Post[]; index?: number; }
+const { series, posts, index = 0 } = Astro.props;
+const list = chapters(posts, series.data.slug);
+---
+<a href={seriesHref(series)} class="series-card">
+  <div class="series-card-top"><span class="series-index">SERIES / {String(index + 1).padStart(2, '0')}</span><span class="status"><i></i>{statusLabels[series.data.status]}</span></div>
+  <div class="series-mark" aria-hidden="true"><span></span><span></span><span></span><b>{String(list.length).padStart(2, '0')}</b></div>
+  <h3>{series.data.title}</h3>
+  <p>{series.data.description}</p>
+  <div class="series-card-bottom"><span>{list.length} 篇文章 · 按章节阅读</span><span aria-hidden="true">↗</span></div>
+</a>

@@ -1,0 +1,14 @@
+---
+import { dateLabel, postHref, readingTime, tagHref, type Post } from '../lib/content';
+interface Props { post: Post; number?: number; }
+const { post, number } = Astro.props;
+---
+<article class="post-card">
+  <div class="post-date"><time datetime={post.data.publishedAt.toISOString()}>{dateLabel(post.data.publishedAt)}</time>{number !== undefined && <span class="entry-number">{String(number).padStart(2, '0')}</span>}</div>
+  <div class="post-card-body">
+    <div class="post-meta">{post.data.series ? <span>系列文章</span> : <span>独立手记</span>}<span class="dot">·</span><span>{readingTime(post.body)} 分钟阅读</span>{post.data.draft && <span class="draft-badge">草稿</span>}</div>
+    <h3><a href={postHref(post)}>{post.data.title}<span class="article-arrow" aria-hidden="true">↗</span></a></h3>
+    <p>{post.data.description}</p>
+    <div class="tag-row">{post.data.tags.map((tag) => <a href={tagHref(tag)}># {tag}</a>)}</div>
+  </div>
+</article>

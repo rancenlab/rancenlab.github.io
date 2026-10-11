@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getContent, href } from '../../lib/content';
+export async function getStaticPaths() {
+  const { posts } = await getContent();
+  return [...new Set(posts.flatMap((post) => post.data.tags))].map((tag) => ({ params: { tag }, props: { tag } }));
+}
+const { tag } = Astro.props;
+const { posts } = await getContent();
+const matching = posts.filter((post) => post.data.tags.includes(tag));
+---
+<Base title={`主题：${tag}`}><div class="breadcrumb"><a href={href('tags/')}>主题标签</a><span>/</span><span>{tag}</span></div><header class="page-heading"><span class="eyebrow">TOPIC COLLECTION</span><h1># {tag}</h1><p>这个主题下，共有 {matching.length} 篇手记。</p></header><div class="post-list">{matching.map((post) => <PostCard post={post} />)}</div></Base>

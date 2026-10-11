@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import KnowledgeUniverse from '../components/KnowledgeUniverse.astro';
+import { getContent, href } from '../lib/content';
+import '../styles/universe-home.css';
+const { posts, series } = await getContent();
+---
+<Base home>
+  <div class="universe-home">
+    <div class="sky-background" aria-hidden="true"><div class="sky-cloud cloud-one"></div><div class="sky-cloud cloud-two"></div><canvas class="sky-starfield"></canvas><div class="sky-orbit"></div><div class="sky-planet"></div><div class="sky-pointer-light"></div><div class="sky-meteors"><i></i><i></i></div></div>
+    <header class="sky-intro"><span>AN OPEN UNIVERSE</span><h1>让思考，连成宇宙。</h1><p>每一颗星，都是一次探索。</p></header>
+    <KnowledgeUniverse posts={posts} series={series} />
+    <footer class="sky-footer"><span>拖动探索 · 点击星系展开</span><div><a href={href('posts/')}>全部文章 ↗</a><a href={href('subscribe/')}>RSS 订阅 ↗</a></div></footer>
+  </div>
+</Base>

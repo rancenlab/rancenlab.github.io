@@ -1,0 +1,7 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getContent, tagHref } from '../../lib/content';
+const { posts } = await getContent();
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort((first, second) => first.localeCompare(second, 'zh-CN'));
+---
+<Base title="主题标签"><header class="page-heading"><span class="eyebrow">CONNECTED IDEAS</span><h1>从一个关键词，出发。</h1><p>跨越文章与系列，发现同一主题下的不同视角。</p></header><div class="tag-grid">{tags.map((tag) => <a href={tagHref(tag)}><span># {tag}</span><small>{posts.filter((post) => post.data.tags.includes(tag)).length} 篇手记</small><b aria-hidden="true">↗</b></a>)}</div></Base>

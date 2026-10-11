@@ -1,0 +1,18 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getContent, chapters, href, postHref, readingTime, statusLabels } from '../../lib/content';
+export async function getStaticPaths() {
+  const { series } = await getContent();
+  return series.map((item) => ({ params: { slug: item.data.slug }, props: { series: item } }));
+}
+const { series } = Astro.props;
+const { posts } = await getContent();
+const list = chapters(posts, series.data.slug);
+const { Content } = await render(series);
+---
+<Base title={series.data.title} description={series.data.description}>
+  <div class="breadcrumb"><a href={href('series/')}>系列阅读</a><span>/</span><span>{series.data.title}</span></div>
+  <header class="page-heading series-heading"><span class="eyebrow">A GUIDED LEARNING PATH</span><h1>{series.data.title}</h1><p>{series.data.description}</p><div class="post-meta"><span class="status"><i></i>{statusLabels[series.data.status]}</span><span>共 {list.length} 篇</span><span>约 {list.reduce((total, post) => total + readingTime(post.body), 0)} 分钟</span></div></header>
+  <div class="series-detail"><div><h2 class="small-heading">章节目录</h2><div class="chapter-list">{list.map((post, index) => <a class="chapter" href={postHref(post)}><span class="chapter-number">{String(index + 1).padStart(2, '0')}</span><div><h3>{post.data.title}{post.data.draft && <span class="draft-badge">草稿</span>}</h3><p>{post.data.description}</p><small>{readingTime(post.body)} 分钟阅读</small></div><span aria-hidden="true">↗</span></a>)}</div></div><aside class="series-intro prose"><Content />{list[0] && <a class="button" href={postHref(list[0])}>从第一章开始 →</a>}</aside></div>
+</Base>

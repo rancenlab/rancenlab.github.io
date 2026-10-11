@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getContent, href, tagHref } from '../../lib/content';
+const { posts } = await getContent();
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+---
+<Base title="全部文章">
+  <header class="page-heading"><span class="eyebrow">THE ARCHIVE</span><h1>每一次探索，都有记录。</h1><p>实践、复盘与思考。共 {posts.length} 篇手记，按发布时间排列。</p></header>
+  <div class="filter-row"><a class="selected" href={href('posts/')}>全部文章</a>{tags.map((tag) => <a href={tagHref(tag)}>{tag}</a>)}</div>
+  <div class="post-list">{posts.map((post, index) => <PostCard post={post} number={index + 1} />)}</div>
+  {!posts.length && <p class="empty-state">第一篇手记正在准备中。</p>}
+</Base>
